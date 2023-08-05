@@ -1,12 +1,39 @@
 import tkinter as tk
 import mysql.connector
 from tkinter import messagebox
+from tkinter import ttk
 from PIL import Image, ImageTk
 import os
 
-def opcion1_click():
-    etiqueta_titulo.config(text="Opcion 1")
-    contenido.config(text="Aqui va el contenido de la opcion 1")
+# Crear una tabla de ejemplo con datos ficticios
+def crear_tabla_usuarios(tabla):
+    # Insertar algunas filas con datos de ejemplo
+    tabla.insert("", "end", values=("Usuario1", "Administrador", "registrado"))
+    tabla.insert("", "end", values=("Usuario2", "Usuario normal", "registrado"))
+    tabla.insert("", "end", values=("Usuario3", "Usuario normal", "registrado")) 
+
+# Función para mostrar la tabla de usuarios
+def usuarios_sistema():
+    etiqueta_titulo.config(text="Usuarios del sistema")
+    
+    # Aplicar el tema "clam" a toda la aplicación (esto cambiará el estilo de la tabla)
+    estilo = ttk.Style()
+    estilo.theme_use("clam")
+    
+    # Crear la tabla en el contenedor derecho
+    tabla_usuarios = ttk.Treeview(contenido, columns=("Usuario", "Rol"), show="headings")
+    tabla_usuarios.heading("Usuario", text="Usuario")
+    tabla_usuarios.heading("Rol", text="Rol")
+    
+    # Ajustar el tamaño de las columnas
+    tabla_usuarios.column("Usuario", width=100)
+    tabla_usuarios.column("Rol", width=100)
+    
+    # Agregar datos a la tabla
+    crear_tabla_usuarios(tabla_usuarios)
+    
+    # Mostrar la tabla en el contenedor derecho
+    tabla_usuarios.pack(fill="both", expand=True)
 
 def opcion2_click():
     etiqueta_titulo.config(text="Opción 2")
@@ -58,7 +85,7 @@ def iniciar_sesion():
         etiqueta_menu.pack(pady=10)
 
         # Opción 1
-        opcion1 = tk.Button(panel_izquierdo, text="Opción 1", bg="white", padx=10, pady=5, command=opcion1_click)
+        opcion1 = tk.Button(panel_izquierdo, text="Ver usuarios del sistema", bg="white", padx=10, pady=5, command=usuarios_sistema)
         opcion1.pack(pady=5)
 
         # Opción 2
@@ -82,6 +109,8 @@ def iniciar_sesion():
         contenido.pack(pady=5)
 
         ventana_dashboard.mainloop()
+
+        ventana_dashboard.destroy()
     else:
        messagebox.showerror("Inicio de sesión fallido", "Credenciales incorrectas") 
 

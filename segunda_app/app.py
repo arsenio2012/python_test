@@ -5,37 +5,56 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import os
 
+# Declara la variable de conexión como global
+global conexion
+# Define la tabla de usuarios como una variable global
+tabla_usuarios = None
+
 # Crear una tabla de ejemplo con datos ficticios
 def crear_tabla_usuarios(tabla):
-    # Insertar algunas filas con datos de ejemplo
-    tabla.insert("", "end", values=("Usuario1", "Administrador", "registrado"))
-    tabla.insert("", "end", values=("Usuario2", "Usuario normal", "registrado"))
-    tabla.insert("", "end", values=("Usuario3", "Usuario normal", "registrado")) 
+    global conexion  # Accede a la variable global que ya has creado en iniciar_sesion
+
+    cursor = conexion.cursor()
+    # Ejecutamos la consulta para obtener los usuarios
+    cursor.execute("SELECT username, email, id_rol, create_at FROM users")
+    # Recuperamos todos los resultados de la consulta
+    resultados = cursor.fetchall()
+
+    # Ahora puedes hacer lo que necesites con los resultados obtenidos, por ejemplo, imprimirlos
+    for username, email, id_rol, create_at in resultados:
+        # Insertar algunas filas con datos de ejemplo
+        tabla.insert("", "end", values=(username, id_rol))
 
 # Función para mostrar la tabla de usuarios
 def usuarios_sistema():
+    global tabla_usuarios
+
     etiqueta_titulo.config(text="Usuarios del sistema")
     
-    # Aplicar el tema "clam" a toda la aplicación (esto cambiará el estilo de la tabla)
+     # Si la tabla no ha sido creada previamente, crea la tabla en el contenedor derecho
+    # Destruir la tabla si ya existe antes de crear una nueva
+    if tabla_usuarios and tabla_usuarios.winfo_exists():
+        tabla_usuarios.destroy()
+
     estilo = ttk.Style()
     estilo.theme_use("clam")
-    
-    # Crear la tabla en el contenedor derecho
+
     tabla_usuarios = ttk.Treeview(contenido, columns=("Usuario", "Rol"), show="headings")
     tabla_usuarios.heading("Usuario", text="Usuario")
     tabla_usuarios.heading("Rol", text="Rol")
-    
-    # Ajustar el tamaño de las columnas
     tabla_usuarios.column("Usuario", width=100)
     tabla_usuarios.column("Rol", width=100)
-    
-    # Agregar datos a la tabla
-    crear_tabla_usuarios(tabla_usuarios)
-    
-    # Mostrar la tabla en el contenedor derecho
     tabla_usuarios.pack(fill="both", expand=True)
 
+    # Agregar datos a la tabla
+    crear_tabla_usuarios(tabla_usuarios)
+
 def opcion2_click():
+    global tabla_usuarios
+    # Destruir la tabla si existe al seleccionar la opción 2
+    if tabla_usuarios:
+        tabla_usuarios.destroy()
+
     etiqueta_titulo.config(text="Opción 2")
     contenido.config(text="Aquí va el contenido de la opción 2")
 
@@ -44,6 +63,8 @@ def opcion3_click():
     contenido.config(text="Aquí va el contenido de la opción 3")
 
 def iniciar_sesion():
+    global conexion  # Accede a la variable global para poder modificarla
+
     usuario = usuario_entry.get()
     contrasena = contrasena_entry.get()
 
@@ -58,7 +79,6 @@ def iniciar_sesion():
     cursor = conexion.cursor()
     cursor.execute("SELECT username FROM users WHERE username = %s AND password = %s", (usuario, contrasena))
     resultado = cursor.fetchone()
-    conexion.close()
 
     if resultado is not None:
         messagebox.showinfo("Inicio de sesión exitoso", f"Bienvenido, {usuario}!")
@@ -109,8 +129,10 @@ def iniciar_sesion():
         contenido.pack(pady=5)
 
         ventana_dashboard.mainloop()
-
+       
         ventana_dashboard.destroy()
+        # Cerramos la conexión
+        conexion.close()
     else:
        messagebox.showerror("Inicio de sesión fallido", "Credenciales incorrectas") 
 

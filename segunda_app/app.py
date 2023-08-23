@@ -1,10 +1,9 @@
 import tkinter as tk
 import mysql.connector
-from tkinter import messagebox
-from tkinter import ttk
-from PIL import Image, ImageTk
 import os
 import datetime
+from tkinter import messagebox, ttk, simpledialog
+from PIL import Image, ImageTk
 
 # Declara la variable de conexión como global
 global conexion
@@ -30,14 +29,16 @@ def crear_tabla_usuarios(tabla):
 
     cursor = conexion.cursor()
     # Ejecutamos la consulta para obtener los usuarios
-    cursor.execute("SELECT username, email, id_rol, create_at FROM users")
+    cursor.execute("SELECT id_user username, email, id_rol, create_at FROM users")
     # Recuperamos todos los resultados de la consulta
     resultados = cursor.fetchall()
 
     # Ahora puedes hacer lo que necesites con los resultados obtenidos, por ejemplo, imprimirlos
-    for username, email, id_rol, create_at in resultados:
+    for id_user, username, id_rol, create_at in resultados:
         # Insertar algunas filas con datos de ejemplo
-        tabla.insert("", "end", values=(username, id_rol))
+        editar_button = "Editar"  # Valor de la celda para el botón Editar
+        eliminar_button = "Eliminar"  # Valor de la celda para el botón Eliminar
+        tabla.insert("", "end", values=(username, id_rol, editar_button, eliminar_button))
 
 def crear_usuario():
    # Crear la ventana de registro de usuario
@@ -123,7 +124,17 @@ def crear_usuario():
     boton_guardar = tk.Button(formulario_frame, text="Guardar", bg="#4caf50", fg="white", font=("Helvetica", 12), command=guardar_usuario)
     boton_guardar.pack(pady=10, ipadx=10)
 
+def editar_usuario(id_user):
+    nuevo_nombre = simpledialog.askstring("Editar Usuario", f"Editar nombre de usuario para '{id_user}':")
+    #if nuevo_nombre:
+        # Aquí puedes realizar la actualización en la base de datos con el nuevo nombre
+        # y luego actualizar la tabla llamando a crear_tabla_usuarios(tabla_usuarios)
 
+def eliminar_usuario(id_user):
+    confirmacion = messagebox.askyesno("Confirmar Eliminación", f"¿Estás seguro de eliminar al usuario '{id_user}'?")
+    #if confirmacion:
+        # Aquí puedes realizar la eliminación en la base de datos
+        # y luego actualizar la tabla llamando a crear_tabla_usuarios(tabla_usuarios)
 
 # Función para mostrar la tabla de usuarios
 def usuarios_sistema():
@@ -143,18 +154,22 @@ def usuarios_sistema():
     estilo = ttk.Style()
     estilo.theme_use("clam")
 
-    tabla_usuarios = ttk.Treeview(contenido, columns=("Usuario", "Rol"), show="headings")
+    tabla_usuarios = ttk.Treeview(contenido, columns=("Usuario", "Rol", "Editar", "Eliminar"), show="headings")
     tabla_usuarios.heading("Usuario", text="Usuario")
     tabla_usuarios.heading("Rol", text="Rol")
-    tabla_usuarios.column("Usuario", width=100)
-    tabla_usuarios.column("Rol", width=100)
-    tabla_usuarios.pack(fill="both", expand=True)
+    tabla_usuarios.heading("Editar", text="Editar")
+    tabla_usuarios.heading("Eliminar", text="Eliminar")
+    tabla_usuarios.column("Usuario", width=150)  # Ajustar el ancho según tus necesidades
+    tabla_usuarios.column("Rol", width=150)  # Ajustar el ancho según tus necesidades
+    tabla_usuarios.column("Editar", width=80)  # Ajustar el ancho según tus necesidades
+    tabla_usuarios.column("Eliminar", width=80)  # Ajustar el ancho según tus necesidades
+    tabla_usuarios.grid(row=0, column=0, sticky="nsew")  # Ajustar la expansión y alineación
+    contenido.grid_rowconfigure(0, weight=1)  # Asegurar que la fila se expanda verticalmente
+    contenido.grid_columnconfigure(0, weight=1)  # Asegurar que la columna se expanda horizontalmente
 
-    # Agregar botón "Crear Usuario" al footer
     boton_crear_usuario = tk.Button(contenido, text="Crear Usuario", command=crear_usuario)
-    boton_crear_usuario.pack(side="left", padx=10, pady=5)    
+    boton_crear_usuario.grid(row=1, column=0, padx=10, pady=5)
 
-    # Agregar datos a la tabla
     crear_tabla_usuarios(tabla_usuarios)
 
  
